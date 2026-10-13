@@ -25,7 +25,7 @@ Namespace UI
         Private m_suppress As Boolean = False
         Private m_warning As Boolean = False
         Private m_warningText As String = String.Empty
-        Private m_warningColor As Color = Color.FromArgb(239, 68, 68)
+        Private m_warningColor As Color = Theme.Danger
 
         Public Sub New(title As String, minimum As Integer, maximum As Integer, value As Integer)
             Height = 52
@@ -34,14 +34,14 @@ Namespace UI
 
             m_titleLabel.Text = title
             m_titleLabel.AutoSize = True
-            m_titleLabel.ForeColor = Color.FromArgb(148, 163, 184)
+            m_titleLabel.ForeColor = Theme.Muted
             m_titleLabel.Font = New Font("Microsoft YaHei UI", 8.75F)
             m_titleLabel.Location = New Point(2, 4)
             m_titleLabel.BackColor = Color.Transparent
 
             m_valueLabel.AutoSize = False
             m_valueLabel.TextAlign = ContentAlignment.TopRight
-            m_valueLabel.ForeColor = Color.FromArgb(230, 237, 247)
+            m_valueLabel.ForeColor = Theme.Text
             m_valueLabel.Font = New Font("Consolas", 9.5F, FontStyle.Bold)
             m_valueLabel.BackColor = Color.Transparent
 
@@ -50,7 +50,7 @@ Namespace UI
             m_track.TickStyle = TickStyle.None
             m_track.AutoSize = False
             m_track.Height = 26
-            m_track.BackColor = Color.FromArgb(18, 23, 34)
+            m_track.BackColor = Theme.TrackBackground
             m_track.Value = System.Math.Max(m_track.Minimum, System.Math.Min(m_track.Maximum, value))
             m_track.Location = New Point(0, 22)
 
@@ -165,8 +165,8 @@ Namespace UI
             m_warning = active
             m_warningText = If(message, String.Empty)
 
-            m_titleLabel.ForeColor = If(active, m_warningColor, Color.FromArgb(148, 163, 184))
-            m_valueLabel.ForeColor = If(active, m_warningColor, Color.FromArgb(230, 237, 247))
+            m_titleLabel.ForeColor = If(active, m_warningColor, Theme.Muted)
+            m_valueLabel.ForeColor = If(active, m_warningColor, Theme.Text)
 
             UpdateLabel()
         End Sub

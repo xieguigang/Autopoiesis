@@ -31,14 +31,14 @@ Namespace UI
             m_accent = accent
             m_hint = hint
 
-            BackColor = Color.FromArgb(18, 23, 34)
+            BackColor = Theme.CardBackground
             Padding = New Padding(12, CaptionHeight, 12, 10)
 
             Body.FlowDirection = FlowDirection.TopDown
             Body.WrapContents = False
             Body.AutoScroll = False
             Body.Dock = DockStyle.Fill
-            Body.BackColor = Color.FromArgb(18, 23, 34)
+            Body.BackColor = Theme.CardBackground
             Body.Margin = New Padding(0)
 
             Controls.Add(Body)
@@ -72,11 +72,11 @@ Namespace UI
             Dim rect As New Rectangle(0, 0, System.Math.Max(1, Width - 1), System.Math.Max(1, Height - 1))
 
             Using path As GraphicsPath = RoundedPath(rect, CornerRadius)
-                Using brush As New SolidBrush(Color.FromArgb(18, 23, 34))
+                Using brush As New SolidBrush(Theme.CardBackground)
                     g.FillPath(brush, path)
                 End Using
 
-                Using pen As New Pen(Color.FromArgb(35, 42, 58))
+                Using pen As New Pen(Theme.CardBorder)
                     g.DrawPath(pen, path)
                 End Using
             End Using
@@ -86,13 +86,13 @@ Namespace UI
                 g.FillRectangle(brush, 12, 11, 3, 13)
             End Using
 
-            Using brush As New SolidBrush(Color.FromArgb(230, 237, 247))
+            Using brush As New SolidBrush(Theme.Text)
                 g.DrawString(m_caption, s_captionFont, brush, 21.0F, 9.0F)
             End Using
 
             If Not String.IsNullOrEmpty(m_hint) Then
                 Dim size As SizeF = g.MeasureString(m_hint, s_hintFont)
-                Using brush As New SolidBrush(Color.FromArgb(100, 116, 139))
+                Using brush As New SolidBrush(Theme.Hint)
                     g.DrawString(m_hint, s_hintFont, brush,
                                  System.Math.Max(21.0F, Width - size.Width - 14.0F), 12.0F)
                 End Using

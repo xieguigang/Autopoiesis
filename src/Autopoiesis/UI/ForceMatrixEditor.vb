@@ -50,8 +50,8 @@ Namespace UI
                      ControlStyles.ResizeRedraw Or
                      ControlStyles.Selectable, True)
 
-            BackColor = Color.FromArgb(18, 23, 34)
-            ForeColor = Color.FromArgb(230, 237, 247)
+            BackColor = Theme.TrackBackground
+            ForeColor = Theme.Text
         End Sub
 
         ''' <summary>力值发生变化（滚轮 / 左键 / 右键归零）</summary>
@@ -165,15 +165,15 @@ Namespace UI
         End Sub
 
         Private Sub DrawCorner(g As Graphics, rect As Rectangle)
-            Using brush As New SolidBrush(Color.FromArgb(13, 17, 25))
+            Using brush As New SolidBrush(Theme.CardBackground)
                 FillRounded(g, brush, rect, CornerRadius)
             End Using
 
-            Using pen As New Pen(Color.FromArgb(38, 46, 64))
+            Using pen As New Pen(Theme.CardBorder)
                 DrawRounded(g, pen, rect, CornerRadius)
             End Using
 
-            Using brush As New SolidBrush(Color.FromArgb(100, 116, 139))
+            Using brush As New SolidBrush(Theme.Hint)
                 g.DrawString("j →", m_hintFont, brush, rect.X + 4.0F, rect.Y + 2.0F)
                 g.DrawString("i ↓", m_hintFont, brush, rect.X + 4.0F, rect.Bottom - 15.0F)
             End Using
@@ -189,7 +189,7 @@ Namespace UI
             End Using
 
             If hovered Then
-                Using pen As New Pen(Color.FromArgb(235, 34, 211, 238), 2.0F)
+                Using pen As New Pen(Color.FromArgb(235, Theme.Accent.R, Theme.Accent.G, Theme.Accent.B), 2.0F)
                     DrawRounded(g, pen, rect, CornerRadius)
                 End Using
             End If
@@ -220,11 +220,11 @@ Namespace UI
             End Using
 
             If hovered Then
-                Using pen As New Pen(Color.FromArgb(235, 34, 211, 238), 2.0F)
+                Using pen As New Pen(Color.FromArgb(235, Theme.Accent.R, Theme.Accent.G, Theme.Accent.B), 2.0F)
                     DrawRounded(g, pen, rect, CornerRadius)
                 End Using
             Else
-                Using pen As New Pen(Color.FromArgb(30, 36, 50))
+                Using pen As New Pen(Theme.CardBorder)
                     DrawRounded(g, pen, rect, CornerRadius)
                 End Using
             End If

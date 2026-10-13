@@ -34,7 +34,7 @@ Partial Class FormWorld
         ' 
         AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
-        BackColor = Color.FromArgb(CByte(11), CByte(14), CByte(20))
+        BackColor = Color.White
         ClientSize = New Size(1440, 920)
         Icon = CType(resources.GetObject("$this.Icon"), Icon)
         KeyPreview = True

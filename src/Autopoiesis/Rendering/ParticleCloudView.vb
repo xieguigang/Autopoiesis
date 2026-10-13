@@ -76,7 +76,7 @@ Namespace Rendering
             MyBase.New()
 
             AutoClear = True
-            BackgroundColor = Color.FromArgb(4, 6, 10)
+            BackgroundColor = UI.Theme.CanvasBackground
             DoubleBuffered = False
 
             ' 逐点嵌入色 + 屏幕对齐方形光点；关闭一切与模型展示相关的叠加层
