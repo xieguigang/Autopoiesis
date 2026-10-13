@@ -25,5 +25,30 @@ Namespace My
 
     Partial Friend Class MyApplication
 
+        ''' <summary>
+        ''' 命令行模式：带 <c>--selftest</c> 时只运行自测并直接结束进程。
+        ''' </summary>
+        ''' <remarks>
+        ''' Startup 事件早于 <c>OnCreateMainForm</c>，因此在事件里结束进程就不会创建主窗体，
+        ''' 这样 <c>Autopoiesis.exe --selftest</c> 就是一个纯粹的控制台模式（把标准输出重定向
+        ''' 到文件即可看到完整报告，报告同时落盘到可执行文件目录）。
+        ''' </remarks>
+        Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
+            Dim runSelfTest As Boolean = False
+
+            For Each argument As String In e.CommandLine
+                If String.Equals(argument, "--selftest", StringComparison.OrdinalIgnoreCase) Then
+                    runSelfTest = True
+                End If
+            Next
+
+            If Not runSelfTest Then Return
+
+            Dim logFile As String = IO.Path.Combine(AppContext.BaseDirectory, "autopoiesis_selftest.log")
+            Dim failures As Integer = Global.Autopoiesis.SelfTest.AutopoiesisSelfTest.Run(logFile)
+
+            Environment.Exit(failures)
+        End Sub
+
     End Class
 End Namespace
