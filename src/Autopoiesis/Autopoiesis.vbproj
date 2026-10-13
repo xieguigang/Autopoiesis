@@ -8,6 +8,11 @@
     <MyType>WindowsForms</MyType>
     <Platforms>AnyCPU;x64</Platforms>
     <UseWPF>True</UseWPF>
+    <!--
+      ILCuda / ILCudaTensor 通过 CUDA 驱动 API 加载 64 位 NVRTC 与 nvcuda，
+      只能在 x64 下工作；AnyCPU 会以 32 位宿主进程启动并导致引擎创建失败。
+    -->
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +32,15 @@
     <ProjectReference Include="..\..\..\GCModeller\src\runtime\sciBASIC#\vs_solutions\dev\VisualStudio\VisualStudio.NET5.vbproj" />
     <ProjectReference Include="..\..\..\Microsoft.VisualBasic.Drawing\src\DXApi\DXApi.vbproj" />
     <ProjectReference Include="..\..\..\Microsoft.VisualBasic.Drawing\src\DxCanvas\DxCanvas.vbproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      粒子生命的 CUDA C 内核源码。作为内嵌资源随本程序集分发，运行时由
+      ILCuda 的 KernelSources.Register(程序集) 注入，与框架内核一起并入
+      同一个 NVRTC 编译单元。资源名必须保持 .cu 后缀，否则不会被识别。
+    -->
+    <EmbeddedResource Include="Kernels\autopoiesis_physics.cu" />
   </ItemGroup>
 
   <ItemGroup>
