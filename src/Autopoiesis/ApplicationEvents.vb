@@ -35,11 +35,30 @@ Namespace My
         ''' </remarks>
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
             Dim runSelfTest As Boolean = False
+            Dim arguments As String() = New String(e.CommandLine.Count - 1) {}
 
-            For Each argument As String In e.CommandLine
-                If String.Equals(argument, "--selftest", StringComparison.OrdinalIgnoreCase) Then
-                    runSelfTest = True
-                End If
+            e.CommandLine.CopyTo(arguments, 0)
+
+            For index As Integer = 0 To arguments.Length - 1
+                Select Case arguments(index).ToLowerInvariant()
+                    Case "--selftest"
+                        runSelfTest = True
+
+                    Case "--snapshot"
+                        If index + 1 < arguments.Length Then
+                            Global.Autopoiesis.StartupOptions.SnapshotPath = arguments(index + 1)
+                            index += 1
+                        End If
+
+                    Case "--frames"
+                        Dim frames As Integer
+
+                        If index + 1 < arguments.Length AndAlso
+                           Integer.TryParse(arguments(index + 1), frames) AndAlso frames > 0 Then
+                            Global.Autopoiesis.StartupOptions.SnapshotFrame = frames
+                            index += 1
+                        End If
+                End Select
             Next
 
             If Not runSelfTest Then Return

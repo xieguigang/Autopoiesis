@@ -840,6 +840,41 @@ Public Class FormWorld
         End If
 
         UpdateStatus()
+
+        CaptureSnapshotIfRequested()
+    End Sub
+
+    ''' <summary>
+    ''' <c>--snapshot &lt;文件&gt;</c> 模式：跑够帧数后把画布截图存盘并退出。
+    ''' </summary>
+    ''' <remarks>
+    ''' 截图只能在 UI 线程、且在渲染回调之外调用（<c>CaptureFrame</c> 会同步重绘，
+    ''' 在 Render 事件里调用会抛 <c>InvalidOperationException</c>）。
+    ''' 帧定时器的 Tick 正好满足这两个条件。
+    ''' </remarks>
+    Private Sub CaptureSnapshotIfRequested()
+        Dim path As String = StartupOptions.SnapshotPath
+
+        If String.IsNullOrWhiteSpace(path) Then Return
+        If m_renderedFrames < StartupOptions.SnapshotFrame Then Return
+
+        ' 只截一次：先清空请求，避免保存失败时反复尝试
+        StartupOptions.SnapshotPath = String.Empty
+
+        Dim saved As Boolean = False
+        Dim errorMessage As String = Nothing
+
+        Try
+            saved = m_view.SaveSnapshot(path)
+        Catch ex As Exception
+            errorMessage = ex.Message
+        End Try
+
+        Console.WriteLine(If(saved,
+                            $"快照已保存: {path}",
+                            $"快照保存失败: {If(errorMessage, "SaveSnapshot 返回 False")}"))
+
+        Close()
     End Sub
 
     ' ==================================================================

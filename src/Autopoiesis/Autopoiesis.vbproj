@@ -13,7 +13,12 @@
       只能在 x64 下工作；AnyCPU 会以 32 位宿主进程启动并导致引擎创建失败。
     -->
     <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>3mf.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="3mf.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <Import Include="System.Data" />

@@ -27,16 +27,19 @@ Partial Class FormWorld
     '      集中在一处，改起来更安全。
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
-        components = New System.ComponentModel.Container()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(FormWorld))
         SuspendLayout()
-        '
+        ' 
         ' FormWorld
-        '
+        ' 
+        AutoScaleDimensions = New SizeF(7F, 15F)
         AutoScaleMode = AutoScaleMode.Font
-        BackColor = System.Drawing.Color.FromArgb(11, 14, 20)
-        ClientSize = New System.Drawing.Size(1440, 920)
-        MinimumSize = New System.Drawing.Size(960, 640)
+        BackColor = Color.FromArgb(CByte(11), CByte(14), CByte(20))
+        ClientSize = New Size(1440, 920)
+        Icon = CType(resources.GetObject("$this.Icon"), Icon)
         KeyPreview = True
+        MinimumSize = New Size(960, 640)
+        Name = "FormWorld"
         StartPosition = FormStartPosition.CenterScreen
         Text = "AUTOPOIESIS · Particle Life"
         ResumeLayout(False)
