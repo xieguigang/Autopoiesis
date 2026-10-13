@@ -1,0 +1,308 @@
+[gd_scene load_steps=13 format=3 uid="uid://bwvletgsn73fb"]
+
+[ext_resource type="Script" uid="uid://d3lbe567lc32k" path="res://scenes/simulation/simulation.gd" id="1_u0jth"]
+[ext_resource type="Script" uid="uid://c6nvdnoo0t5vl" path="res://scenes/simulation/pipeline.gd" id="2_kplc7"]
+[ext_resource type="Script" uid="uid://xlpdjjlko41q" path="res://scenes/simulation/particles.gd" id="3_hqsr5"]
+[ext_resource type="Script" uid="uid://otmmd8vi0q7w" path="res://scenes/simulation/interface.gd" id="4_hqsr5"]
+[ext_resource type="FontFile" uid="uid://dv8spbwapsig" path="res://assets/SimplySans-Bold.ttf" id="4_kplc7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u0jth"]
+bg_color = Color(0, 0, 0, 0.78431374)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kplc7"]
+bg_color = Color(0, 0.6533332, 0.98, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_top = 6.0
+expand_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hqsr5"]
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_top = 6.0
+expand_margin_bottom = 6.0
+
+[sub_resource type="Theme" id="Theme_hqsr5"]
+default_font = ExtResource("4_kplc7")
+default_font_size = 30
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iicj5"]
+bg_color = Color(0.88, 0.88, 0, 1)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_top = 6.0
+expand_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_332bl"]
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_top = 6.0
+expand_margin_bottom = 6.0
+
+[sub_resource type="Environment" id="Environment_u0jth"]
+background_mode = 3
+glow_normalized = true
+glow_strength = 0.8
+glow_mix = 0.191
+glow_blend_mode = 0
+glow_hdr_threshold = 0.16
+glow_hdr_scale = 0.0
+glow_hdr_luminance_cap = 256.0
+glow_map_strength = 0.0
+
+[node name="Simulation" type="Node2D"]
+script = ExtResource("1_u0jth")
+
+[node name="Particles" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_hqsr5")
+
+[node name="Pipeline" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_kplc7")
+
+[node name="Interface" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_hqsr5")
+
+[node name="Region" type="TextureRect" parent="Interface"]
+unique_name_in_owner = true
+layout_mode = 0
+
+[node name="Elements" type="Control" parent="Interface"]
+unique_name_in_owner = true
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Panel" type="PanelContainer" parent="Interface/Elements"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 480.0
+offset_bottom = 1440.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_u0jth")
+
+[node name="Sub Elements" type="VBoxContainer" parent="Interface/Elements"]
+unique_name_in_owner = true
+layout_mode = 1
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 461.0
+offset_bottom = 1420.0
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 40
+text = "SIMULATION SETTINGS"
+horizontal_alignment = 1
+
+[node name="Particle Count Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = " Particle Count:"
+
+[node name="Particle Count Slider" type="HSlider" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Controls the number of particles that are generated when F2 is pressed"
+theme_override_styles/slider = SubResource("StyleBoxFlat_kplc7")
+min_value = 1.0
+max_value = 317.0
+value = 150.0
+ticks_position = 3
+
+[node name="Particle Types Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = " Particle Types:"
+
+[node name="Particle Types Slider" type="HSlider" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Controls the number of particle types that are generated when F2 is pressed"
+theme_override_styles/slider = SubResource("StyleBoxFlat_hqsr5")
+min_value = 1.0
+max_value = 10.0
+value = 5.0
+tick_count = 10
+ticks_position = 3
+
+[node name="Regenerate Colors" type="CheckButton" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Toggles whether to reset the particle colors when F2 is pressed"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = "Reset Colors:"
+
+[node name="Regenerate Forces" type="CheckButton" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Toggles whether to reset the particle forces when F2 is pressed"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+button_pressed = true
+text = "Reset Forces:"
+
+[node name="Seed Spin Box" type="SpinBox" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme = SubResource("Theme_hqsr5")
+theme_override_colors/up_icon_modulate = Color(1, 1, 1, 1)
+theme_override_colors/up_hover_icon_modulate = Color(1, 1, 1, 1)
+theme_override_colors/up_pressed_icon_modulate = Color(1, 1, 1, 1)
+theme_override_colors/down_hover_icon_modulate = Color(1, 1, 1, 1)
+theme_override_colors/down_pressed_icon_modulate = Color(1, 1, 1, 1)
+theme_override_constants/buttons_width = 30
+max_value = 65535.0
+rounded = true
+prefix = "Seed: "
+
+[node name="Separator" type="HSeparator" parent="Interface/Elements/Sub Elements"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 1
+
+[node name="Subtitle" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 40
+text = "REALTIME SETTINGS"
+horizontal_alignment = 1
+
+[node name="Dampening Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = "Dampening:"
+
+[node name="Dampening Slider" type="HSlider" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Controls how much each particle's velocity contributes to its movement"
+theme_override_styles/slider = SubResource("StyleBoxFlat_iicj5")
+max_value = 1.0
+step = 0.0
+value = 0.85
+ticks_position = 3
+
+[node name="Repulsion Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = "Repulsion Radius:"
+
+[node name="Repulsion Slider" type="HSlider" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Controls how close particles can be before repulsion starts"
+theme_override_styles/slider = SubResource("StyleBoxFlat_iicj5")
+min_value = 1.0
+max_value = 400.0
+value = 20.0
+ticks_position = 3
+
+[node name="Interaction Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = "Interaction Radius:"
+
+[node name="Interaction Slider" type="HSlider" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Controls the max distance where particles still interact"
+theme_override_styles/slider = SubResource("StyleBoxFlat_iicj5")
+min_value = 1.0
+max_value = 720.0
+value = 60.0
+ticks_position = 3
+
+[node name="Density Limit Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = "Density Limit:"
+
+[node name="Density Limit Slider" type="HSlider" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Controls the max distance where particles still interact"
+theme_override_styles/slider = SubResource("StyleBoxFlat_iicj5")
+max_value = 720.0
+value = 60.0
+ticks_position = 3
+
+[node name="Particle Values Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = "Particle Values:"
+
+[node name="Particle Grid" type="GridContainer" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "The top and left boxes allow for particle colors to be changed, and the other boxes can be scrolled on to change force values"
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
+columns = 10
+
+[node name="Particle Radius Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = "Particle Radius:"
+
+[node name="Particle Radius Slider" type="HSlider" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Controls the size of each particle"
+theme_override_styles/slider = SubResource("StyleBoxFlat_332bl")
+min_value = 1.0
+max_value = 10.0
+value = 2.0
+tick_count = 10
+ticks_position = 3
+
+[node name="Glow Check Button" type="CheckButton" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+tooltip_text = "Enables/disables the glow effect when the menu is closed using F1"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 29
+text = "Glow Enabled:"
+
+[node name="CodeNoodles Label" type="Label" parent="Interface/Elements/Sub Elements"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.66, 0.66, 0.66, 1)
+theme_override_fonts/font = ExtResource("4_kplc7")
+theme_override_font_sizes/font_size = 25
+text = "CodeNoodles 2026"
+horizontal_alignment = 1
+
+[node name="Post Processing" type="WorldEnvironment" parent="."]
+unique_name_in_owner = true
+environment = SubResource("Environment_u0jth")
