@@ -21,6 +21,10 @@ Namespace UI
         Private ReadOnly m_caption As String
         Private ReadOnly m_accent As Color
         Private ReadOnly m_hint As String
+        Private ReadOnly m_body As New FlowLayoutPanel()
+
+        Private Shared ReadOnly s_captionFont As New Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold)
+        Private Shared ReadOnly s_hintFont As New Font("Microsoft YaHei UI", 8.0F)
 
         Public Sub New(caption As String, accent As Color, Optional hint As String = Nothing)
             m_caption = caption
