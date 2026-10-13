@@ -155,5 +155,6 @@
     <BuildType Solution="PlantMAT|*" Project="Release" />
     <BuildType Solution="Rsharp_app_release|*" Project="Release" />
     <Platform Solution="Debug|x64" Project="x64" />
+    <Platform Solution="Release|x64" Project="x64" />
   </Project>
 </Solution>
