@@ -217,11 +217,13 @@ Public Class FormWorld
             m_stepTimer = Nothing
         End If
 
-        ' ParticleLifeSimulation.Dispose 会一并释放它持有的计算后端与求解器显存
+        ' ParticleLifeSimulation 不再释放后端（谁创建谁释放），所以这里两件都要做
         If m_simulation IsNot Nothing Then
             m_simulation.Dispose()
             m_simulation = Nothing
-        ElseIf m_backend IsNot Nothing Then
+        End If
+
+        If m_backend IsNot Nothing Then
             m_backend.Dispose()
             m_backend = Nothing
         End If
@@ -936,6 +938,17 @@ Public Class FormWorld
 
         Console.WriteLine($"步数={m_simulation.StepCount} 求解={m_simulation.LastSolverMilliseconds:F2}ms " &
                           $"张量={m_simulation.LastIntegrateMilliseconds:F2}ms 后端={m_backend.StatusLabel()}")
+        Console.WriteLine($"|F|max={MaxAbs(state.ForceX, state.ParticleCount):E3} " &
+                          $"|v|max={MaxAbs(state.VelX, state.ParticleCount):E3}/" &
+                          $"{MaxAbs(state.VelY, state.ParticleCount):E3} " &
+                          $"|x|首={state.PosX(0):F3} F[0]=({state.ForceX(0):E3},{state.ForceY(0):E3}) " &
+                          $"v[0]=({state.VelX(0):E3},{state.VelY(0):E3})")
+        Console.WriteLine($"dt={m_parameters.Dt:F6} β={m_parameters.Dampening:F3} " &
+                          $"r={m_parameters.RepulsionRadius:F2} R={m_parameters.InteractionRadius:F2} " &
+                          $"ρ_limit={m_parameters.DensityLimit:F2}")
+        Console.WriteLine($"力矩阵[0..5]={state.ForceMatrix(0):F3},{state.ForceMatrix(1):F3}," &
+                          $"{state.ForceMatrix(2):F3},{state.ForceMatrix(3):F3}," &
+                          $"{state.ForceMatrix(4):F3},{state.ForceMatrix(5):F3}")
         Console.WriteLine("------------------")
 
         Dim saved As Boolean = False
@@ -999,6 +1012,18 @@ Public Class FormWorld
 
         m_statusLabel.Text = text
     End Sub
+
+    ''' <summary>数组前 <paramref name="count"/> 个元素的绝对值最大值（诊断用）</summary>
+    Private Shared Function MaxAbs(values As Single(), count As Integer) As Single
+        Dim result As Single = 0.0F
+
+        For i As Integer = 0 To System.Math.Min(count, values.Length) - 1
+            Dim v As Single = System.Math.Abs(values(i))
+            If v > result Then result = v
+        Next
+
+        Return result
+    End Function
 
     Private Sub SetStatus(message As String)
         If m_statusLabel Is Nothing Then Return

@@ -1,4 +1,5 @@
 Imports System.Diagnostics
+Imports tf = Microsoft.VisualBasic.MachineLearning.TensorFlow
 
 Namespace Simulation
 
@@ -132,6 +133,26 @@ Namespace Simulation
         ''' <summary>
         ''' 推进一帧。
         ''' </summary>
+        ''' <remarks>
+        ''' <para>
+        ''' <b>帧末必须让张量的设备端缓存失效</b>，否则 GPU 上的仿真会在第一步之后<b>完全静止</b>
+        ''' （这不是理论风险，而是本项目已经踩过并修掉的真实缺陷）。原因：
+        ''' <c>CudaTensorF.Device(t)</c> 以 <c>(t.Data 主机数组引用, t.Version)</c> 为键缓存显存副本，
+        ''' 而 <c>Version = 张量自身写入计数 + TensorF.DeviceEpoch</c>。
+        ''' 本仿真每帧都用 <c>TensorF.Wrap(state.PosX, …)</c> 现做一个<b>全新</b>的包装器
+        ''' （自身写入计数恒为 0），同时又<b>绕过索引器</b>就地把新位置/新速度/新力写回
+        ''' <c>ParticleState</c> 的同几个数组（<c>Array.Copy</c> / <c>PinnedHostBuffer.ReadInto</c>）——
+        ''' 于是缓存键逐帧完全相同，GPU 会一直用<b>第一帧上传的旧位置</b>重算，
+        ''' 得到与上一帧逐位相同的力、再写回逐位相同的位置：状态被钉死在初始条件上。
+        ''' </para>
+        ''' <para>
+        ''' <see cref="tf.TensorF.InvalidateAllDeviceCaches"/> 正是框架为这种
+        ''' "Wrap 零拷贝包装 + 主机侧就地推进" 的用法提供的失效手段（见
+        ''' <c>TensorF.vb</c> 的 <c>DeviceEpoch</c> 注释）。它在帧末把全局纪元号 +1，
+        ''' 使下一帧所有张量的缓存键都改变，从而强制重新上传。
+        ''' 代价可忽略：本仿真的每个张量每帧内容都会变，本来就必须重新上传。
+        ''' </para>
+        ''' </remarks>
         Public Sub StepOnce()
             ThrowIfDisposed()
 
@@ -147,6 +168,9 @@ Namespace Simulation
             m_stopwatch.Stop()
             m_lastIntegrateMs = m_stopwatch.Elapsed.TotalMilliseconds
 
+            ' 求解器与积分器都就地改写了 TensorF 包装着的宿主数组，必须让设备端缓存失效
+            tf.TensorF.InvalidateAllDeviceCaches()
+
             m_stepCount += 1
         End Sub
 
@@ -154,11 +178,21 @@ Namespace Simulation
             If m_disposed Then Throw New ObjectDisposedException(GetType(ParticleLifeSimulation).Name)
         End Sub
 
+        ''' <summary>
+        ''' 结束本仿真对象。
+        ''' </summary>
+        ''' <remarks>
+        ''' <b>刻意不释放计算后端</b>：后端是构造时由调用方传入的，生命周期由创建者掌握。
+        ''' 早期版本在这里顺手 <c>m_backend.Dispose()</c>，结果一个进程里只能有<b>一个</b>
+        ''' 仿真对象——第二个（例如自测的第 6 节）一启动就会拿到已被释放的引擎并抛
+        ''' <c>ObjectDisposedException</c>。而且 CUDA 引擎一旦释放，全进程的
+        ''' <c>CudaTensor</c> / <c>CudaTensorF</c> 单例都会指向失效上下文，无法重建。
+        ''' 因此这里的约定是：<b>谁创建，谁释放</b>。
+        ''' </remarks>
         Public Sub Dispose() Implements IDisposable.Dispose
             If m_disposed Then Return
 
             m_disposed = True
-            m_backend.Dispose()
         End Sub
 
     End Class

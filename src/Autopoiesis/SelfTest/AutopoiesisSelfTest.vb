@@ -19,7 +19,9 @@ Namespace SelfTest
     ''' <item>张量积分器（力截断 / 阻尼辛欧拉 / 环面回绕）与标量参考实现的对拍，
     ''' 重点是"用 Clip 重建 floor"得到的 <c>mod(x, L)</c> 在 0 / L / 上溢 / 下溢 边界上的行为；</item>
     ''' <item>CUDA 内核与托管参考实现的数值对拍；</item>
-    ''' <item>长时间运行的稳定性：位置留在环面内、速率有界、无 NaN/Inf。</item>
+    ''' <item>长时间运行的稳定性：位置留在环面内、速率有界、无 NaN/Inf；</item>
+    ''' <item>GPU 规模化演化：粒子数高于 TensorF 的 GPU 元素阈值时，状态仍逐帧持续演化
+    ''' （覆盖"绕过索引器就地改写 → 设备端缓存未失效 → 仿真假死"这一类缺陷）。</item>
     ''' </list>
     ''' </remarks>
     Public NotInheritable Class AutopoiesisSelfTest
@@ -55,6 +57,7 @@ Namespace SelfTest
                 failures += CheckIntegratorAgainstScalarReference(report)
                 failures += CheckSolverCrossValidation(report)
                 failures += CheckLongRunStability(report, backend)
+                failures += CheckGpuScaleEvolution(report, backend)
 
                 report.Line()
                 report.Line($"汇总: {report.Passed} 通过 / {failures} 失败")
@@ -525,6 +528,109 @@ Namespace SelfTest
                             $"（后端 {simulation.Integrator.BackendName}）")
             Finally
                 ' 释放仿真会一并释放计算后端；Dispose 是幂等的
+                simulation.Dispose()
+            End Try
+
+            Return failures
+        End Function
+
+        ' ==================================================================
+        ' 6. GPU 规模化：设备端缓存必须逐帧失效
+        ' ==================================================================
+
+        ''' <summary>
+        ''' 粒子数高于 TensorF 的 GPU 元素阈值时，状态必须<b>逐帧持续演化</b>。
+        ''' </summary>
+        ''' <remarks>
+        ''' <para>
+        ''' 这一条是针对一个真实缺陷的回归测试：主机侧绕过 TensorF 索引器、就地改写
+        ''' <c>Wrap</c> 包装出来的数组之后，如果没有调用
+        ''' <c>TensorF.InvalidateAllDeviceCaches</c>，GPU 后端会因为
+        ''' <c>(数组引用, Version)</c> 这个缓存键逐帧完全相同，而一直拿
+        ''' <b>第一帧上传的旧位置</b>重算，于是出现"步数在涨、状态纹丝不动"的假死。
+        ''' </para>
+        ''' <para>
+        ''' 关键点：只有元素数 ≥ <c>CudaTensorF.MinGpuElementsF</c>（默认 4096）才会走
+        ''' 设备端缓存，因此第 5 节的低粒子数稳定性测试<b>根本覆盖不到</b>它——
+        ''' 这正是该缺陷最初漏网的原因。
+        ''' </para>
+        ''' </remarks>
+        Private Shared Function CheckGpuScaleEvolution(report As ReportWriter,
+                                                      backend As Physics.ComputeBackend) As Integer
+            report.Section("6. GPU 规模化演化（设备端缓存失效回归）")
+
+            Dim failures As Integer = 0
+            Const measuredSteps As Integer = 40
+            Const warmupSteps As Integer = 8
+
+            ' 必须 ≥ CudaTensorF.MinGpuElementsF，否则张量算子会回退 CPU、测不出缓存问题
+            Dim particleCount As Integer = ILCudaGpu.CudaTensorF.MinGpuElementsF + 1024
+
+            Dim parameters As New Physics.SimulationParameters With {
+                .ParticleCount = particleCount,
+                .ParticleTypes = 4,
+                .Seed = 20261013
+            }
+
+            report.Info($"阈值 = {ILCudaGpu.CudaTensorF.MinGpuElementsF} 元素；本用例 N = {particleCount}")
+
+            Dim simulation As New Simulation.ParticleLifeSimulation(parameters, backend)
+
+            Try
+                simulation.Rebuild(regenerateForces:=True, regenerateColors:=True)
+
+                ' 预热：让速度从 0 建立起来，避免把"第一步几乎没动"误判成缺陷
+                For i As Integer = 1 To warmupSteps
+                    simulation.StepOnce()
+                Next
+
+                Dim previous As Single() = CType(simulation.State.PosX.Clone(), Single())
+                Dim frozenSteps As Integer = 0
+                Dim largestStep As Single = 0.0F
+                Dim totalDrift As Single = 0.0F
+
+                For i As Integer = 1 To measuredSteps
+                    simulation.StepOnce()
+
+                    Dim current As Single() = simulation.State.PosX
+                    Dim stepMax As Single = 0.0F
+
+                    For p As Integer = 0 To particleCount - 1
+                        ' 环面回绕会产生接近 L 的跳变，按最小像折算回真实位移
+                        Dim delta As Single = TorusDistance(current(p), previous(p), parameters.RegionWidth)
+
+                        If delta > stepMax Then stepMax = delta
+                    Next
+
+                    If stepMax < 0.000001F Then frozenSteps += 1
+                    If stepMax > largestStep Then largestStep = stepMax
+
+                    totalDrift += stepMax
+                    previous = CType(current.Clone(), Single())
+                Next
+
+                If frozenSteps = 0 AndAlso largestStep > 0.01F Then
+                    report.Pass($"6.1 N={particleCount}（≥ GPU 阈值）逐帧持续演化",
+                                $"{measuredSteps} 帧无静止帧；单帧最大位移 {largestStep:F3}，" &
+                                $"累计 {totalDrift:F1} 世界单位；" &
+                                $"求解器 {backend.Solver.Name} / 张量 {simulation.Integrator.BackendName}")
+                Else
+                    report.Fail($"6.1 N={particleCount}（≥ GPU 阈值）逐帧持续演化",
+                                $"{frozenSteps} / {measuredSteps} 帧完全静止（单帧最大位移 {largestStep:E3}）——" &
+                                "极可能是设备端缓存未失效：请确认 StepOnce 末尾调用了 " &
+                                "TensorF.InvalidateAllDeviceCaches()")
+                    failures += 1
+                End If
+
+                ' 步数与状态必须同步前进：假死时步数仍在涨，这里用"位移/步"反查
+                If totalDrift > 0.0F Then
+                    report.Pass("6.2 步进计数与状态演化一致",
+                                $"步数 {simulation.StepCount}，平均单帧最大位移 {totalDrift / measuredSteps:F4}")
+                Else
+                    report.Fail("6.2 步进计数与状态演化一致", "步数在增长但位移恒为 0")
+                    failures += 1
+                End If
+            Finally
                 simulation.Dispose()
             End Try
 
