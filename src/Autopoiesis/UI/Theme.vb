@@ -34,7 +34,7 @@ Namespace UI
         Public Shared ReadOnly Danger As Color = Color.FromArgb(239, 68, 68)    ' 红
 
         ' ---- 画布 ----
-        Public Shared ReadOnly CanvasBackground As Color = Color.FromArgb(249, 250, 252)
+        Public Shared ReadOnly CanvasBackground As Color = Color.Black
 
     End Class
 
