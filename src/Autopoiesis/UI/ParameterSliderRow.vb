@@ -25,6 +25,7 @@ Namespace UI
         Private m_suppress As Boolean = False
         Private m_warning As Boolean = False
         Private m_warningText As String = String.Empty
+        Private m_warningColor As Color = Color.FromArgb(239, 68, 68)
 
         Public Sub New(title As String, minimum As Integer, maximum As Integer, value As Integer)
             Height = 52
@@ -125,15 +126,37 @@ Namespace UI
             End Set
         End Property
 
-        ''' <summary>把行标记为数据非法（例如排斥半径 ≥ 交互半径）</summary>
+        ''' <summary>警示色（默认红；可用于「数值偏大」这类琥珀色提示）</summary>
+        Public Property WarningColor As Color
+            Get
+                Return m_warningColor
+            End Get
+            Set(value As Color)
+                m_warningColor = value
+
+                If m_warning Then
+                    m_titleLabel.ForeColor = value
+                    m_valueLabel.ForeColor = value
+                End If
+            End Set
+        End Property
+
+        ''' <summary>
+        ''' 把行标记为需要提醒。
+        ''' </summary>
+        ''' <param name="active">是否显示提醒</param>
+        ''' <param name="message">
+        ''' 为 <c>Nothing</c> 时只改变颜色，数值文本仍然按格式化结果显示；
+        ''' 给了文本则用它替换数值文本（例如 "r ≥ R"）。
+        ''' </param>
         Public Sub SetWarning(active As Boolean, Optional message As String = Nothing)
             If m_warning = active AndAlso message = m_warningText Then Return
 
             m_warning = active
             m_warningText = If(message, String.Empty)
 
-            m_titleLabel.ForeColor = If(active, Color.FromArgb(239, 68, 68), Color.FromArgb(148, 163, 184))
-            m_valueLabel.ForeColor = If(active, Color.FromArgb(239, 68, 68), Color.FromArgb(230, 237, 247))
+            m_titleLabel.ForeColor = If(active, m_warningColor, Color.FromArgb(148, 163, 184))
+            m_valueLabel.ForeColor = If(active, m_warningColor, Color.FromArgb(230, 237, 247))
 
             UpdateLabel()
         End Sub

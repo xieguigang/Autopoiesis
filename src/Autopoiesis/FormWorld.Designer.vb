@@ -20,12 +20,26 @@ Partial Class FormWorld
     'NOTE: The following procedure is required by the Windows Form Designer
     'It can be modified using the Windows Form Designer.
     'Do not modify it using the code editor.
+    '
+    'NOTE: 参数实验台与状态栏的控件树全部由 FormWorld.BuildLayout() 以代码方式构建。
+    '      控件数量多、层次深（表格布局 + 卡片 + 流式行），用设计器生成器维护
+    '      InitializeComponent 会非常脆弱；代码化还能顺手把主题、字体与事件接线
+    '      集中在一处，改起来更安全。
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         components = New System.ComponentModel.Container()
+        SuspendLayout()
+        '
+        ' FormWorld
+        '
         AutoScaleMode = AutoScaleMode.Font
-        ClientSize = New Size(800, 450)
-        Text = "Form1"
+        BackColor = System.Drawing.Color.FromArgb(11, 14, 20)
+        ClientSize = New System.Drawing.Size(1440, 920)
+        MinimumSize = New System.Drawing.Size(960, 640)
+        KeyPreview = True
+        StartPosition = FormStartPosition.CenterScreen
+        Text = "AUTOPOIESIS · Particle Life"
+        ResumeLayout(False)
     End Sub
 
 End Class

@@ -87,32 +87,17 @@ Namespace UI
             End Using
 
             Using brush As New SolidBrush(Color.FromArgb(230, 237, 247))
-                g.DrawString(m_caption, CaptionFont, brush, 21.0F, 9.0F)
+                g.DrawString(m_caption, s_captionFont, brush, 21.0F, 9.0F)
             End Using
 
             If Not String.IsNullOrEmpty(m_hint) Then
-                Dim size As SizeF = g.MeasureString(m_hint, HintFont)
+                Dim size As SizeF = g.MeasureString(m_hint, s_hintFont)
                 Using brush As New SolidBrush(Color.FromArgb(100, 116, 139))
-                    g.DrawString(m_hint, HintFont, brush,
+                    g.DrawString(m_hint, s_hintFont, brush,
                                  System.Math.Max(21.0F, Width - size.Width - 14.0F), 12.0F)
                 End Using
             End If
         End Sub
-
-        Private Shared ReadOnly Property CaptionFont As Font
-            Get
-                Return s_captionFont
-            End Get
-        End Property
-
-        Private Shared ReadOnly Property HintFont As Font
-            Get
-                Return s_hintFont
-            End Get
-        End Property
-
-        Private Shared ReadOnly s_captionFont As New Font("Microsoft YaHei UI", 9.5F, FontStyle.Bold)
-        Private Shared ReadOnly s_hintFont As New Font("Microsoft YaHei UI", 8.0F)
 
         Private Shared Function RoundedPath(rect As Rectangle, radius As Integer) As GraphicsPath
             Dim path As New GraphicsPath()
