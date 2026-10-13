@@ -52,7 +52,11 @@ Namespace UI
         ''' <summary>卡片主体的纵向流式容器</summary>
         <Browsable(False),
          DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
-        Public ReadOnly Property Body As New FlowLayoutPanel()
+        Public ReadOnly Property Body As FlowLayoutPanel
+            Get
+                Return m_body
+            End Get
+        End Property
 
         ''' <summary>按内容行数估算卡片高度：标题 + 若干行 + 内边距</summary>
         Public Shared Function SuggestHeight(contentHeight As Integer) As Integer
