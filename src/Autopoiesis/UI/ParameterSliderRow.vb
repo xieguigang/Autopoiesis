@@ -70,7 +70,7 @@ Namespace UI
         ''' <summary>滑杆整数到实际值的比例</summary>
         <Browsable(False),
          DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
-        Public Property Scale As Single
+        Shadows Public Property Scale As Single
             Get
                 Return m_scale
             End Get
