@@ -44,6 +44,9 @@ Namespace My
                     Case "--selftest"
                         runSelfTest = True
 
+                    Case "--calibrate"
+                        Global.Autopoiesis.StartupOptions.Calibrate = True
+
                     Case "--snapshot"
                         If index + 1 < arguments.Length Then
                             Global.Autopoiesis.StartupOptions.SnapshotPath = arguments(index + 1)

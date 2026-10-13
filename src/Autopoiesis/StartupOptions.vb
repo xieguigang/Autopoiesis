@@ -22,4 +22,11 @@ Friend Module StartupOptions
     ''' <summary>在第几帧截图</summary>
     Public SnapshotFrame As Integer = 45
 
+    ''' <summary>
+    ''' 渲染标定模式：把粒子状态替换成三颗已知世界坐标的粒子
+    ''' （颜色分别为青 / 红 / 绿，便于在截图中按颜色定位），
+    ''' 并让交互半径失效使它们静止不动，从而可以量出真实的投影缩放与方向。
+    ''' </summary>
+    Public Calibrate As Boolean = False
+
 End Module

@@ -136,6 +136,8 @@ Public Class FormWorld
         m_simulation = New Simulation.ParticleLifeSimulation(m_parameters, m_backend)
         m_simulation.Rebuild(regenerateForces:=True, regenerateColors:=True)
 
+        If StartupOptions.Calibrate Then ApplyCalibrationState()
+
         SyncUiFromParameters()
 
         m_view.Bind(m_parameters)
@@ -158,6 +160,52 @@ Public Class FormWorld
         m_view.RenderState(m_simulation.State)
 
         m_stepTimer.Start()
+    End Sub
+
+    ''' <summary>
+    ''' <c>--calibrate</c>：把状态替换成三颗已知世界坐标的粒子。
+    ''' </summary>
+    ''' <remarks>
+    ''' 三颗粒子相距 256 / 144 世界单位（远大于被压到 2 的交互半径），因此受力为零、
+    ''' 保持静止；颜色分别取默认调色板的前三种（青 / 红 / 绿），于是可以在截图里按
+    ''' 颜色精确量出投影的缩放与 y 轴方向。
+    ''' </remarks>
+    Private Sub ApplyCalibrationState()
+        m_parameters.RepulsionRadius = 1.0F
+        m_parameters.InteractionRadius = 2.0F
+        m_parameters.ParticleRadius = 7.0F
+        m_parameters.Dampening = 0.85F
+
+        Dim state As Physics.ParticleState = m_simulation.State
+
+        state.EnsureCapacity(3)
+
+        ' 世界中心
+        state.PosX(0) = m_parameters.RegionWidth * 0.5F
+        state.PosY(0) = m_parameters.RegionHeight * 0.5F
+        state.Types(0) = 0
+
+        ' 向 +x 偏移 256 世界单位
+        state.PosX(1) = state.PosX(0) + 256.0F
+        state.PosY(1) = state.PosY(0)
+        state.Types(1) = 1
+
+        ' 向 -y 偏移 144 世界单位
+        state.PosX(2) = state.PosX(0)
+        state.PosY(2) = state.PosY(0) - 144.0F
+        state.Types(2) = 2
+
+        For i As Integer = 0 To 2
+            state.VelX(i) = 0.0F
+            state.VelY(i) = 0.0F
+            state.ForceX(i) = 0.0F
+            state.ForceY(i) = 0.0F
+            state.Density(i) = 0.0F
+        Next
+
+        m_backend.Solver.Invalidate()
+
+        m_sliderPointSize.NumericValue = 6.0F
     End Sub
 
     Protected Overrides Sub OnFormClosing(e As FormClosingEventArgs)
@@ -860,6 +908,35 @@ Public Class FormWorld
 
         ' 只截一次：先清空请求，避免保存失败时反复尝试
         StartupOptions.SnapshotPath = String.Empty
+
+        Console.WriteLine("---- 渲染诊断 ----")
+        Console.WriteLine(m_view.DescribeFrame())
+
+        Dim state As Physics.ParticleState = m_simulation.State
+        Dim minX As Single = Single.MaxValue, maxX As Single = Single.MinValue
+        Dim minY As Single = Single.MaxValue, maxY As Single = Single.MinValue
+
+        For i As Integer = 0 To state.ParticleCount - 1
+            If state.PosX(i) < minX Then minX = state.PosX(i)
+            If state.PosX(i) > maxX Then maxX = state.PosX(i)
+            If state.PosY(i) < minY Then minY = state.PosY(i)
+            If state.PosY(i) > maxY Then maxY = state.PosY(i)
+        Next
+
+        Console.WriteLine($"状态包围盒  : x∈[{minX:F1},{maxX:F1}] (跨度 {maxX - minX:F1}) " &
+                          $"y∈[{minY:F1},{maxY:F1}] (跨度 {maxY - minY:F1})")
+
+        For t As Integer = 0 To System.Math.Min(2, state.TypeColors.Length - 1)
+            Dim c As Color = state.TypeColors(t)
+            Dim packed As Integer = Rendering.ParticleInstanceBuffer.PackColorBits(c)
+
+            Console.WriteLine($"颜色[{t}]      : A{c.A} R{c.R} G{c.G} B{c.B} ToArgb=0x{c.ToArgb():X8} " &
+                              $"packed=0x{packed:X8}")
+        Next
+
+        Console.WriteLine($"步数={m_simulation.StepCount} 求解={m_simulation.LastSolverMilliseconds:F2}ms " &
+                          $"张量={m_simulation.LastIntegrateMilliseconds:F2}ms 后端={m_backend.StatusLabel()}")
+        Console.WriteLine("------------------")
 
         Dim saved As Boolean = False
         Dim errorMessage As String = Nothing

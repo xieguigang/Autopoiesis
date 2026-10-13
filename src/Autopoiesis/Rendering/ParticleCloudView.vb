@@ -109,6 +109,52 @@ Namespace Rendering
             End Get
         End Property
 
+        ''' <summary>实例缓冲（诊断用：检查逐点位置与打包色是否写对）</summary>
+        <Browsable(False),
+         DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
+        Public ReadOnly Property InstanceBuffer As ParticleInstanceBuffer
+            Get
+                Return m_instances
+            End Get
+        End Property
+
+        ''' <summary>把当前帧的相机与渲染选项摘要成多行诊断文本</summary>
+        Public Function DescribeFrame() As String
+            Dim camera As Img3D.Camera = Controller.Camera
+            Dim report As New System.Text.StringBuilder()
+
+            report.AppendLine($"画布        : {ClientSize.Width} x {ClientSize.Height}")
+            report.AppendLine($"缩放        : zoom={m_zoom:F5}（像素/世界单位）")
+            report.AppendLine($"相机        : fov={camera.FieldOfView} vd={camera.ViewDistance:F3} " &
+                              $"angle=({camera.AngleX},{camera.AngleY},{camera.AngleZ}) " &
+                              $"offset=({camera.Offset.X:F2}, {camera.Offset.Y:F2})")
+            report.AppendLine($"世界中心    : ({m_centerX:F2}, {m_centerY:F2})")
+            report.AppendLine($"等效 factor : {camera.FieldOfView / System.Math.Max(camera.ViewDistance, 0.001F):F5}")
+            report.AppendLine($"管线        : {PipelineDiagnostics}")
+            report.AppendLine($"选项        : embeddedColor={Options.UseEmbeddedColor} pointSize={Options.PointSize} " &
+                              $"shape={Options.PointShape} mode={Options.Mode} msaa={Options.MultisampleCount}")
+            report.AppendLine($"场景        : surfaces={Scene.SurfaceCount} points={Scene.PointCount} lines={Scene.LineCount}")
+
+            If m_renderer IsNot Nothing Then
+                report.AppendLine($"外部实例云  : count={m_renderer.ExternalInstanceCount} " &
+                                  $"capacity={m_renderer.ExternalInstanceCapacity} gpu={m_renderer.IsGpuAvailable}")
+                report.AppendLine($"设备        : {m_renderer.DeviceDiagnostics}")
+                report.AppendLine($"上传耗时    : {m_renderer.LastUploadMs:F3} ms")
+            End If
+
+            If m_instances.Capacity > 0 Then
+                Dim data As Single() = m_instances.Data
+                Dim packed As Integer = BitConverter.SingleToInt32Bits(data(7))
+
+                report.AppendLine($"实例[0]     : pos=({data(0):F2},{data(1):F2},{data(2):F2}) " &
+                                  $"size={data(6):F2} packedColor=0x{packed:X8}")
+                report.AppendLine($"实例[1]     : pos=({data(8):F2},{data(9):F2}) size={data(14):F2} " &
+                                  $"packedColor=0x{BitConverter.SingleToInt32Bits(data(15)):X8}")
+            End If
+
+            Return report.ToString()
+        End Function
+
         ''' <summary>缩放：屏幕像素 / 世界单位</summary>
         <Browsable(False),
          DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>

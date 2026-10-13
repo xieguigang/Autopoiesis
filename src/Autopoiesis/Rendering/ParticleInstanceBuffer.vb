@@ -106,10 +106,32 @@ Namespace Rendering
             Next
         End Sub
 
-        ''' <summary>把 <see cref="Color"/> 打包成 <c>R|G&lt;&lt;8|B&lt;&lt;16|A&lt;&lt;24</c> 的位模式</summary>
+        ''' <summary>
+        ''' 把 <see cref="Color"/> 打包成颜色槽所需的 <c>R|G&lt;&lt;8|B&lt;&lt;16|A&lt;&lt;24</c> 位模式。
+        ''' </summary>
+        ''' <remarks>
+        ''' <para>
+        ''' 颜色槽是 <c>R8G8B8A8_UNORM</c>，内存里的字节序必须是 <c>[R][G][B][A]</c>
+        ''' （小端整数即 <c>R | G&lt;&lt;8 | B&lt;&lt;16 | A&lt;&lt;24</c>）。
+        ''' </para>
+        ''' <para>
+        ''' <b>这里刻意不用移位运算符：</b>VB 的 <c>&lt;&lt;</c> / <c>Or</c> 会<b>保留左操作数的类型</b>，
+        ''' 而 <see cref="Color.R"/> 等通道是 <c>Byte</c>，于是 <c>color.G &lt;&lt; 8</c> 的结果
+        ''' 仍然按 <c>Byte</c> 求值、移出的高位被丢弃 —— 整个表达式最终只剩低 8 位。
+        ''' 实测：青色 <c>(A=255,R=0,G=255,B=255)</c> 与红色 <c>(A=255,R=255,G=0,B=0)</c>
+        ''' 都得到 <c>0x000000FF</c>（alpha 变成 0，于是着色器退回调色板分支、
+        ''' 所有粒子被画成同一个颜色）。用字节数组 + <see cref="BitConverter"/> 表达
+        ''' 内存布局则完全无歧义。
+        ''' </para>
+        ''' </remarks>
+        Public Shared Function PackColorBits(color As Color) As Integer
+            Dim bytes As Byte() = {color.R, color.G, color.B, color.A}
+
+            Return BitConverter.ToInt32(bytes, 0)
+        End Function
+
         Private Shared Function PackColor(color As Color) As Single
-            Dim packed As Integer = color.R Or (color.G << 8) Or (color.B << 16) Or (color.A << 24)
-            Return BitConverter.Int32BitsToSingle(packed)
+            Return BitConverter.Int32BitsToSingle(PackColorBits(color))
         End Function
 
     End Class
