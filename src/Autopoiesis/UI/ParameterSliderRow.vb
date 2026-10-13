@@ -68,6 +68,8 @@ Namespace UI
         Public Event ValueChanged As EventHandler
 
         ''' <summary>滑杆整数到实际值的比例</summary>
+        <Browsable(False),
+         DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
         Public Property Scale As Single
             Get
                 Return m_scale
@@ -81,9 +83,13 @@ Namespace UI
         End Property
 
         ''' <summary>数值显示格式（默认 "0.##"）</summary>
+        <Browsable(False),
+         DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
         Public Property ValueFormat As String = "0.##"
 
         ''' <summary>数值后缀（例如 " px"）</summary>
+        <Browsable(False),
+         DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
         Public Property Suffix As String
             Get
                 Return m_suffix
@@ -95,6 +101,8 @@ Namespace UI
         End Property
 
         ''' <summary>自定义数值格式化（优先于 <see cref="ValueFormat"/>）</summary>
+        <Browsable(False),
+         DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
         Public Property ValueFormatter As Func(Of Single, String)
 
         ''' <summary>实际数值（受 <see cref="Scale"/> 缩放）</summary>
@@ -127,6 +135,8 @@ Namespace UI
         End Property
 
         ''' <summary>警示色（默认红；可用于「数值偏大」这类琥珀色提示）</summary>
+        <Browsable(False),
+         DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
         Public Property WarningColor As Color
             Get
                 Return m_warningColor

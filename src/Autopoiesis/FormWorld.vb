@@ -154,19 +154,28 @@ Public Class FormWorld
         m_initialised = True
         m_fpsWatch.Restart()
 
+        UpdatePlayState()
         m_view.RenderState(m_simulation.State)
 
         m_stepTimer.Start()
     End Sub
 
     Protected Overrides Sub OnFormClosing(e As FormClosingEventArgs)
-        m_stepTimer.Stop()
+        m_running = False
 
+        If m_stepTimer IsNot Nothing Then
+            m_stepTimer.Stop()
+            m_stepTimer.Dispose()
+            m_stepTimer = Nothing
+        End If
+
+        ' ParticleLifeSimulation.Dispose 会一并释放它持有的计算后端与求解器显存
         If m_simulation IsNot Nothing Then
             m_simulation.Dispose()
             m_simulation = Nothing
         ElseIf m_backend IsNot Nothing Then
             m_backend.Dispose()
+            m_backend = Nothing
         End If
 
         MyBase.OnFormClosing(e)
@@ -676,7 +685,7 @@ Public Class FormWorld
     End Sub
 
     Private Sub OnRollSeed(sender As Object, e As EventArgs)
-        m_seedBox.Value = CSng(System.Math.Floor(CDbl(New System.Random().NextDouble()) * 32769.0))
+        m_seedBox.Value = CDec(New System.Random().Next(0, 32769))
     End Sub
 
     Private Sub OnViewChanged(sender As Object, e As EventArgs)
