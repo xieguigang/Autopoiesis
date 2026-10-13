@@ -37,6 +37,10 @@ Public Class FormWorld
     ''' <summary>卡片宽度：为纵向滚动条预留 17px，避免出现横向滚动条</summary>
     Private Const CardWidth As Integer = SettingsPanelWidth - 46
 
+    ''' <summary>交互矩阵卡片的操作提示（未悬停时恢复这句话）</summary>
+    Private Const MatrixHintDefault As String =
+        "首行/首列点色块改颜色 · 格内滚轮 ±0.1 · 右键归零 · 纵列为 i、横行为 j"
+
     ' ------------------------------------------------------------------
     ' 状态
     ' ------------------------------------------------------------------
@@ -308,6 +312,9 @@ Public Class FormWorld
 
         AddHandler bar.Resize, Sub()
                                    ' 标题带宽度变化时把控件重新贴到右侧
+                                   m_backendBadge.Location = New Point(m_titleLabel.Right + 10,
+                                                                       (bar.ClientSize.Height - m_backendBadge.Height) \ 2)
+
                                    Dim cursor As Integer = bar.ClientSize.Width - 16
                                    Dim ordered As Button() = {buttonFullscreen, buttonCamera, buttonReset, m_buttonStep, m_buttonPlay}
 
@@ -420,7 +427,7 @@ Public Class FormWorld
         resetButton.FlatAppearance.BorderColor = Color.FromArgb(34, 90, 110)
         AddHandler resetButton.Click, AddressOf OnResetClicked
 
-        Dim resetCard As UI.CardPanel = CreateCard("重置策略", ThemeAmber, "reset", 30 + 26 * 2 + 38 + 6)
+        Dim resetCard As UI.CardPanel = CreateCard("重置策略", ThemeAmber, "reset", 26 * 2 + 36 + 6)
         resetCard.Body.Controls.Add(m_checkRegenerateColors)
         resetCard.Body.Controls.Add(m_checkRegenerateForces)
         resetCard.Body.Controls.Add(resetButton)
@@ -451,7 +458,7 @@ Public Class FormWorld
         matrixButtons.Controls.Add(randomButton)
 
         m_matrixHint = New Label With {
-            .Text = "首行/首列点色块改颜色 · 格内滚轮 ±0.1 · 右键归零 · 纵列为 i、横行为 j",
+            .Text = MatrixHintDefault,
             .Width = CardWidth - 24,
             .Height = 30,
             .ForeColor = ThemeMuted,
@@ -459,7 +466,7 @@ Public Class FormWorld
             .BackColor = Color.Transparent
         }
 
-        Dim matrixCard As UI.CardPanel = CreateCard("交互矩阵 A[i][j]", ThemeBlue, "force matrix", 30 + 300 + 4 + 30 + 30 + 6)
+        Dim matrixCard As UI.CardPanel = CreateCard("交互矩阵 A[i][j]", ThemeBlue, "force matrix", 300 + 4 + 30 + 30 + 6)
         matrixCard.Body.Controls.Add(m_matrixEditor)
         matrixCard.Body.Controls.Add(matrixButtons)
         matrixCard.Body.Controls.Add(m_matrixHint)
@@ -468,7 +475,7 @@ Public Class FormWorld
         m_sliderPointSize = New UI.ParameterSliderRow("粒子像素尺寸", 1, 16, 2) With {.Width = CardWidth - 24}
         AddHandler m_sliderPointSize.ValueChanged, AddressOf OnViewChanged
 
-        Dim viewCard As UI.CardPanel = CreateCard("视图", Color.FromArgb(167, 139, 250), "view", 30 + 52 + 6)
+        Dim viewCard As UI.CardPanel = CreateCard("视图", Color.FromArgb(167, 139, 250), "view", 52 + 6)
         viewCard.Body.Controls.Add(m_sliderPointSize)
 
         stack.Controls.Add(populationCard)
@@ -714,11 +721,11 @@ Public Class FormWorld
     End Sub
 
     Private Sub OnForceMatrixEdited(sender As Object, e As EventArgs)
-        If m_backend Is Nothing Then Return
+        If m_matrixHint Is Nothing Then Return
 
-        If m_matrixHint IsNot Nothing Then
-            m_matrixHint.Text = m_matrixEditor.HoverText
-        End If
+        Dim hover As String = m_matrixEditor.HoverText
+
+        m_matrixHint.Text = If(String.IsNullOrEmpty(hover), MatrixHintDefault, hover)
     End Sub
 
     Private Sub OnToggleRunning(sender As Object, e As EventArgs)
@@ -781,10 +788,8 @@ Public Class FormWorld
     Private Sub ExecuteOneStep()
         If m_simulation Is Nothing Then Return
 
-        If Not m_parametersValid Then
-            m_statusSuffix = "排斥半径必须小于交互半径，已暂停推进"
-            Return
-        End If
+        ' 参数非法时只是暂停推进，提示由状态栏按需给出（不污染常驻提示）
+        If Not m_parametersValid Then Return
 
         Try
             m_simulation.StepOnce()
@@ -861,6 +866,10 @@ Public Class FormWorld
 
         If m_view IsNot Nothing AndAlso m_view.SceneRenderer IsNot Nothing Then
             text &= $" · 上传 {m_view.SceneRenderer.LastUploadMs:F2}ms"
+        End If
+
+        If Not m_parametersValid Then
+            text &= "  ⚠ 排斥半径必须小于交互半径（已暂停推进）"
         End If
 
         If Not String.IsNullOrEmpty(m_statusSuffix) Then
