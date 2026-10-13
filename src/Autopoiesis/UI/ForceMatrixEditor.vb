@@ -1,3 +1,4 @@
+Imports System.ComponentModel
 Imports System.Drawing
 Imports System.Drawing.Drawing2D
 Imports System.Windows.Forms
@@ -60,6 +61,7 @@ Namespace UI
         Public Event ColorChanged As EventHandler
 
         ''' <summary>当前参与交互的类型数量</summary>
+        <DefaultValue(6)>
         Public Property Types As Integer
             Get
                 Return m_types

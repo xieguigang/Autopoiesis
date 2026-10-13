@@ -136,6 +136,8 @@ Namespace Rendering
         End Property
 
         ''' <summary>视口中心对应的世界坐标 y</summary>
+        <Browsable(False),
+         DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)>
         Public Property CenterY As Single
             Get
                 Return m_centerY
@@ -146,6 +148,7 @@ Namespace Rendering
         End Property
 
         ''' <summary>单个粒子的像素尺寸（逐点尺寸因子固定为 1）</summary>
+        <DefaultValue(2)>
         Public Property PointPixelSize As Integer
             Get
                 Return m_pointPixelSize
