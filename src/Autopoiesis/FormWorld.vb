@@ -378,7 +378,8 @@ Public Class FormWorld
             .Width = CardWidth - 24
         }
 
-        Dim populationCard As UI.CardPanel = CreateCard("种群", ThemeCyan, "population", 30 + 104 + 40 + 6)
+        ' contentHeight 只算卡片内部内容（不含标题带），高度由 CardPanel.SuggestHeight 补齐
+        Dim populationCard As UI.CardPanel = CreateCard("种群", ThemeCyan, "population", 52 * 2 + 36 + 6)
         populationCard.Body.Controls.Add(m_sliderCount)
         populationCard.Body.Controls.Add(m_sliderTypes)
         populationCard.Body.Controls.Add(BuildSeedRow(populationCard))
@@ -397,7 +398,7 @@ Public Class FormWorld
         m_sliderDensityLimit = New UI.ParameterSliderRow("密度上限 ρ_limit", 0, 50, 10) With {.Width = CardWidth - 24}
         m_sliderDensityLimit.Scale = 1.0F
 
-        Dim dynamicsCard As UI.CardPanel = CreateCard("动力学", ThemeGreen, "dynamics", 30 + 52 * 5 + 6)
+        Dim dynamicsCard As UI.CardPanel = CreateCard("动力学", ThemeGreen, "dynamics", 52 * 5 + 6)
         dynamicsCard.Body.Controls.Add(m_sliderRadius)
         dynamicsCard.Body.Controls.Add(m_sliderDamping)
         dynamicsCard.Body.Controls.Add(m_sliderRepulsion)
